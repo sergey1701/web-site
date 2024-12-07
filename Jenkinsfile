@@ -2,7 +2,7 @@ pipeline {
     agent { label 'docker' }
 
     triggers {
-        pollSCM('* * * * *') // Poll SCM every minute hello
+        pollSCM('* * * * *') // Poll SCM every minute hello write
     }
 
     environment {
