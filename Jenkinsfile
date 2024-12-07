@@ -1,60 +1,24 @@
 pipeline {
-    agent { label 'docker' }
+    agent { label 'docker' } // Replace 'docker' with the label of your Jenkins agent
 
     environment {
-        APP_NAME = "hello-world-nodejs"
-        DOCKER_IMAGE = "node:14"
-        CONTAINER_NAME = "node-app-container"
-        PORT = "3000"
-        LOCAL_URL = "http://localhost:${PORT}"
+        APP_NAME = "apache-web-server"
+        DOCKER_IMAGE = "httpd:latest" // Official Apache HTTP Server Docker image
+        CONTAINER_NAME = "apache-container"
+        PORT = "8080" // Host port mapped to container port 80
+        LOCAL_URL = "http://localhost:${PORT}" // URL to access the container
     }
 
     stages {
-        stage('Checkout') {
+        stage('Run Apache Container') {
             steps {
                 script {
-                    echo "Cloning the repository..."
-                    checkout scm
-                }
-            }
-        }
-
-        stage('Validate Workspace') {
-            steps {
-                script {
-                    echo "Validating workspace contents..."
-                    sh "ls -l $WORKSPACE" // Debugging: List workspace files
-                }
-            }
-        }
-
-        stage('Build Node.js Application') {
-            steps {
-                script {
-                    echo "Installing dependencies inside a Docker container..."
-                    sh """
-                    docker run --rm \
-                        -v $WORKSPACE:/app \
-                        -w /app \
-                        ${DOCKER_IMAGE} \
-                        npm install
-                    """
-                }
-            }
-        }
-
-        stage('Run Application') {
-            steps {
-                script {
-                    echo "Starting the application inside a Docker container..."
+                    echo "Starting Apache web server inside a Docker container..."
                     sh """
                     docker run -d --rm \
                         --name ${CONTAINER_NAME} \
-                        -p ${PORT}:${PORT} \
-                        -v $WORKSPACE:/app \
-                        -w /app \
-                        ${DOCKER_IMAGE} \
-                        node app/server.js
+                        -p ${PORT}:80 \
+                        ${DOCKER_IMAGE}
                     """
                 }
             }
@@ -63,7 +27,7 @@ pipeline {
         stage('Output URL') {
             steps {
                 script {
-                    echo "Application is running at: ${LOCAL_URL}"
+                    echo "Apache server is running and accessible at: ${LOCAL_URL}"
                 }
             }
         }
@@ -72,15 +36,15 @@ pipeline {
     post {
         always {
             script {
-                echo "Cleaning up Docker containers..."
+                echo "Ensuring the Apache container is stopped after the pipeline..."
                 sh "docker rm -f ${CONTAINER_NAME} || true"
             }
         }
         success {
-            echo "Pipeline completed successfully!"
+            echo "Pipeline completed successfully! The Apache server was available during the pipeline."
         }
         failure {
-            echo "Pipeline failed. Check logs for details."
+            echo "Pipeline failed. The Apache container might not have started correctly."
         }
     }
 }
