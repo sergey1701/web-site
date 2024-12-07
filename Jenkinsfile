@@ -3,7 +3,8 @@ pipeline {
 
     environment {
         APP_NAME = "hello-world-nodejs"
-        DOCKER_IMAGE = "hello-world-nodejs:latest"
+        DOCKER_IMAGE = "node:14" // Using Node.js Docker image
+        CONTAINER_NAME = "node-app-container"
         PORT = "3000"
         LOCAL_URL = "http://localhost:${PORT}"
     }
@@ -21,26 +22,31 @@ pipeline {
         stage('Build Node.js Application') {
             steps {
                 script {
-                    echo "Installing dependencies..."
-                    sh 'cd app && npm install'
+                    echo "Building application inside a Docker container..."
+                    sh """
+                    docker run --rm \
+                        -v $WORKSPACE:/app \
+                        -w /app \
+                        ${DOCKER_IMAGE} \
+                        npm install
+                    """
                 }
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Run Application') {
             steps {
                 script {
-                    echo "Building Docker image..."
-                    sh "docker build -t ${DOCKER_IMAGE} ./app"
-                }
-            }
-        }
-
-        stage('Run Docker Container') {
-            steps {
-                script {
-                    echo "Running Docker container..."
-                    sh "docker run -d --name ${APP_NAME} -p ${PORT}:${PORT} ${DOCKER_IMAGE}"
+                    echo "Running the application inside a Docker container..."
+                    sh """
+                    docker run -d --rm \
+                        --name ${CONTAINER_NAME} \
+                        -p ${PORT}:${PORT} \
+                        -v $WORKSPACE:/app \
+                        -w /app \
+                        ${DOCKER_IMAGE} \
+                        node app/server.js
+                    """
                 }
             }
         }
@@ -57,9 +63,15 @@ pipeline {
     post {
         always {
             script {
-                echo "Cleaning up old Docker containers..."
-                sh "docker rm -f ${APP_NAME} || true"
+                echo "Cleaning up Docker containers..."
+                sh "docker rm -f ${CONTAINER_NAME} || true"
             }
+        }
+        success {
+            echo "Pipeline executed successfully!"
+        }
+        failure {
+            echo "Pipeline failed. Check the logs for errors."
         }
     }
 }
