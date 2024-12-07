@@ -1,12 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        GIT_REPO = 'https://github.com/your-username/your-repo.git' // Update with your repo URL
-        GIT_CREDENTIALS_ID = 'your-credentials-id' // Update with Jenkins credentials ID
-        BRANCH = 'main' // Update with your target branch
-    }
-
     stages {
         stage('Checkout') {
             steps {
