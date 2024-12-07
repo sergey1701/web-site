@@ -5,7 +5,7 @@ pipeline {
         APP_NAME = "apache-web-server"
         DOCKER_IMAGE = "httpd:latest" // Official Apache HTTP Server Docker image
         CONTAINER_NAME = "apache-container"
-        PORT = "8080" // Host port mapped to container port 80
+        PORT = "8081" // Host port mapped to container port 80
         LOCAL_URL = "http://localhost:${PORT}" // URL to access the container
     }
 
