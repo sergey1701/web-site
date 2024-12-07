@@ -1,6 +1,10 @@
 pipeline {
     agent { label 'docker' } // Replace 'docker' with the label of your Jenkins agent
 
+    triggers {
+        pollSCM('* * * * *') // Poll SCM every minute (adjust as needed)
+    }
+
     environment {
         APP_NAME = "apache-web-server"
         DOCKER_IMAGE = "httpd:latest" // Official Apache HTTP Server Docker image
