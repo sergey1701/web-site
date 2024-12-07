@@ -2,8 +2,8 @@ pipeline {
     agent any
     environment {
         // Set environment variables if needed
-        GIT_REPO = 'https://github.com/your-username/your-repo.git'
-        BRANCH = 'main' // Change to your branch name
+        GIT_REPO = 'https://github.com/sergey1701/web-site.git'
+        BRANCH = 'master' // Change to your branch name
     }
     stages {
         stage('Checkout') {
