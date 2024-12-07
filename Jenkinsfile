@@ -39,7 +39,7 @@ pipeline {
                 script {
                     echo "Starting the application inside a Docker container..."
                     sh """
-                    docker run -d --rm \
+                    docker run -d \
                         --name ${CONTAINER_NAME} \
                         -p ${PORT}:${PORT} \
                         -v $WORKSPACE:/app \
