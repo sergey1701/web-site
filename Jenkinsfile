@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'local-docker' } // Use the local agent
+    agent { label 'docker' } // Use the local agent
 
     stages {
         stage('Checkout') {
