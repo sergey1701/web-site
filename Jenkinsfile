@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'docker' } // Replace 'docker' with the label of your Jenkins agent
+    agent { label 'docker' } // Replace 'docker' hello with the label of your Jenkins agent
 
     triggers {
         pollSCM('* * * * *') // Poll SCM every minute (adjust as needed)
@@ -22,7 +22,7 @@ pipeline {
                     echo "Detected origin: ${origin}"
 
                     // Define the expected origin URL
-                    def expectedOrigin = "https://github.com/your-username/your-repo.git"
+                    def expectedOrigin = "https://github.com/sergey1701/web-site.git"
 
                     // Abort the pipeline if the origin does not match
                     if (origin != expectedOrigin) {
