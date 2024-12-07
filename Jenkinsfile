@@ -2,7 +2,7 @@ pipeline {
     agent { label 'docker' } // Replace 'docker' with the label of your Jenkins agent
 
     triggers {
-        pollSCM('* * * * *') // Poll SCM every minute (adjust as needed)
+        pollSCM('* * * * *') // Poll SCM every minute (adjust as needed) hello
     }
 
     environment {
