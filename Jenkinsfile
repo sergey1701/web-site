@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent { label 'docker' } // Replace with the label of your Jenkins agent
 
     environment {
         APP_NAME = "hello-world-nodejs"
@@ -13,7 +13,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 script {
-                    echo "Cloning the repository..."
+                    echo "Cloning the repository on the agent..."
                     checkout scm
                 }
             }
@@ -22,7 +22,7 @@ pipeline {
         stage('Build Node.js Application') {
             steps {
                 script {
-                    echo "Building application inside a Docker container..."
+                    echo "Installing dependencies inside a Docker container..."
                     sh """
                     docker run --rm \
                         -v $WORKSPACE:/app \
@@ -37,7 +37,7 @@ pipeline {
         stage('Run Application') {
             steps {
                 script {
-                    echo "Running the application inside a Docker container..."
+                    echo "Starting the application inside a Docker container..."
                     sh """
                     docker run -d --rm \
                         --name ${CONTAINER_NAME} \
@@ -63,15 +63,15 @@ pipeline {
     post {
         always {
             script {
-                echo "Cleaning up Docker containers..."
+                echo "Cleaning up Docker containers on the agent..."
                 sh "docker rm -f ${CONTAINER_NAME} || true"
             }
         }
         success {
-            echo "Pipeline executed successfully!"
+            echo "Pipeline completed successfully!"
         }
         failure {
-            echo "Pipeline failed. Check the logs for errors."
+            echo "Pipeline failed. Check logs for details."
         }
     }
 }
