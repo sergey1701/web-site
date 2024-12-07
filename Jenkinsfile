@@ -17,7 +17,7 @@ pipeline {
         APP_NAME = "apache-web-server"
         DOCKER_IMAGE = "httpd:latest" // Official Apache HTTP Server Docker image
         CONTAINER_NAME = "apache-test-container"
-        PORT = "8082" // Initial host port mapped to container port 80
+        PORT = "8001" // Initial host port to start trying
         LOCAL_URL = "" // URL to be updated dynamically
     }
 
@@ -30,40 +30,29 @@ pipeline {
             }
         }
 
-        stage('Check Port Availability') {
+        stage('Find Available Port and Run Apache Container') {
             steps {
                 script {
-                    // Function to check if a port is in use
-                    def isPortInUse = { port ->
-                        return sh(script: "netstat -tuln | grep ':${port} ' || true", returnStatus: true) == 0
+                    def port = env.PORT.toInteger()
+                    while (true) {
+                        try {
+                            echo "Trying to start Apache container on port ${port}..."
+                            sh """
+                            docker run -d \
+                                --name ${CONTAINER_NAME} \
+                                -p ${port}:80 \
+                                ${DOCKER_IMAGE};
+                            """
+                            // If the container starts successfully, break out of the loop
+                            env.PORT = port.toString()
+                            env.LOCAL_URL = "http://test-server:${env.PORT}"
+                            echo "Apache server is running on port ${env.PORT} and accessible at: ${env.LOCAL_URL}"
+                            break
+                        } catch (Exception e) {
+                            echo "Port ${port} failed. Incrementing port and trying again..."
+                            port += 1
+                        }
                     }
-
-                    // Start with 8001 and increment until a free port is found
-                    def port = 8001
-                    while (isPortInUse(port)) {
-                        echo "Port ${port} is in use. Trying next port..."
-                        port += 1
-                    }
-
-                    // Update the environment variables with the available port
-                    env.PORT = port.toString()
-                    env.LOCAL_URL = "http://test-server:${env.PORT}"
-                    echo "Selected port ${env.PORT} for the Apache server."
-                }
-            }
-        }
-
-        stage('Run Apache Container') {
-            steps {
-                script {
-                    echo "Starting Apache web server inside a Docker container..."
-                    sh """
-                    docker run -d \
-                        --name ${CONTAINER_NAME} \
-                        -p ${PORT}:80 \
-                        ${DOCKER_IMAGE};
-                    echo "Apache server is running and accessible at: ${LOCAL_URL}";
-                    """
                 }
             }
         }
