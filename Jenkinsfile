@@ -1,9 +1,9 @@
 pipeline {
-    agent { label 'docker' } // Replace with the label of your Jenkins agent
+    agent { label 'docker' }
 
     environment {
         APP_NAME = "hello-world-nodejs"
-        DOCKER_IMAGE = "node:14" // Using Node.js Docker image
+        DOCKER_IMAGE = "node:14"
         CONTAINER_NAME = "node-app-container"
         PORT = "3000"
         LOCAL_URL = "http://localhost:${PORT}"
@@ -13,8 +13,17 @@ pipeline {
         stage('Checkout') {
             steps {
                 script {
-                    echo "Cloning the repository on the agent..."
+                    echo "Cloning the repository..."
                     checkout scm
+                }
+            }
+        }
+
+        stage('Validate Workspace') {
+            steps {
+                script {
+                    echo "Validating workspace contents..."
+                    sh "ls -l $WORKSPACE" // Debugging: List workspace files
                 }
             }
         }
@@ -39,7 +48,7 @@ pipeline {
                 script {
                     echo "Starting the application inside a Docker container..."
                     sh """
-                    docker run -d \
+                    docker run -d --rm \
                         --name ${CONTAINER_NAME} \
                         -p ${PORT}:${PORT} \
                         -v $WORKSPACE:/app \
@@ -58,28 +67,17 @@ pipeline {
                 }
             }
         }
-
-        stage('Schedule Cleanup') {
-            steps {
-                script {
-                    echo "Scheduling container cleanup in 5 minutes..."
-                    sh """
-                    (sleep 300 && docker rm -f ${CONTAINER_NAME}) &
-                    """
-                }
-            }
-        }
     }
 
     post {
-        // always {
-        //     script {
-        //         echo "Ensuring all Docker containers are cleaned up on the agent..."
-        //         sh "docker rm -f ${CONTAINER_NAME} || true"
-        //     }
-        // }
+        always {
+            script {
+                echo "Cleaning up Docker containers..."
+                sh "docker rm -f ${CONTAINER_NAME} || true"
+            }
+        }
         success {
-            echo "Pipeline completed successfully! The application will run for 5 minutes."
+            echo "Pipeline completed successfully!"
         }
         failure {
             echo "Pipeline failed. Check logs for details."
