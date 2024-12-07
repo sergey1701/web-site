@@ -18,20 +18,9 @@ pipeline {
     }
 
     stages {
-        stage('Check Repository Origin') {
+        stage('Initialize') {
             steps {
-                script {
-                    // Get the origin URL from Git configuration
-                    def origin = sh(script: "git config --get remote.origin.url", returnStdout: true).trim()
-                    echo "Detected origin: ${origin}"
-
-                    // Check if the origin contains 'test'
-                    if (!origin.contains("test")) {
-                        error "Origin does not contain 'test'. Aborting pipeline."
-                    } else {
-                        echo "Origin contains 'test'. Proceeding with the pipeline."
-                    }
-                }
+                echo "Initializing pipeline for ${APP_NAME}..."
             }
         }
 
@@ -52,8 +41,8 @@ pipeline {
 
         stage('Wait and Monitor') {
             steps {
+                echo "Waiting for ${params.SLEEP_TIME} seconds while the Apache server runs..."
                 script {
-                    echo "Waiting for ${params.SLEEP_TIME} seconds while the Apache server runs..."
                     def totalTime = params.SLEEP_TIME.toInteger()
                     for (int i = totalTime; i > 0; i -= 10) {
                         echo "Time remaining: ${i} seconds"
