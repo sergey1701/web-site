@@ -1,35 +1,65 @@
 pipeline {
-    agent { label 'docker' } // Use the local agent
+    agent any
+
+    environment {
+        APP_NAME = "hello-world-nodejs"
+        DOCKER_IMAGE = "hello-world-nodejs:latest"
+        PORT = "3000"
+        LOCAL_URL = "http://localhost:${PORT}"
+    }
 
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                script {
+                    echo "Cloning the repository..."
+                    checkout scm
+                }
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Build Node.js Application') {
             steps {
-                sh 'docker run --rm -v $WORKSPACE:/app -w /app node:14 npm install'
+                script {
+                    echo "Installing dependencies..."
+                    sh 'cd app && npm install'
+                }
             }
         }
 
-        stage('Run Tests') {
+        stage('Build Docker Image') {
             steps {
-                sh 'docker run --rm -v $WORKSPACE:/app -w /app node:14 npm test'
+                script {
+                    echo "Building Docker image..."
+                    sh "docker build -t ${DOCKER_IMAGE} ./app"
+                }
             }
         }
 
-        stage('Build Application') {
+        stage('Run Docker Container') {
             steps {
-                sh 'docker run --rm -v $WORKSPACE:/app -w /app node:14 npm run build'
+                script {
+                    echo "Running Docker container..."
+                    sh "docker run -d --name ${APP_NAME} -p ${PORT}:${PORT} ${DOCKER_IMAGE}"
+                }
+            }
+        }
+
+        stage('Output URL') {
+            steps {
+                script {
+                    echo "Application is running at: ${LOCAL_URL}"
+                }
             }
         }
     }
 
     post {
         always {
-            echo 'Pipeline completed!'
+            script {
+                echo "Cleaning up old Docker containers..."
+                sh "docker rm -f ${APP_NAME} || true"
+            }
         }
     }
 }
