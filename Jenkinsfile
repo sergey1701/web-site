@@ -1,9 +1,9 @@
 pipeline {
-    agent any
+    agent { label 'docker' } // Replace with the label of your Jenkins agent
 
     environment {
         APP_NAME = "hello-world-nodejs"
-        DOCKER_IMAGE = "node:14" // Node.js Docker image
+        DOCKER_IMAGE = "node:14" // Using Node.js Docker image
         CONTAINER_NAME = "node-app-container"
         PORT = "3000"
         LOCAL_URL = "http://localhost:${PORT}"
@@ -13,7 +13,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 script {
-                    echo "Cloning the repository..."
+                    echo "Cloning the repository on the agent..."
                     checkout scm
                 }
             }
@@ -72,11 +72,17 @@ pipeline {
     }
 
     post {
+        always {
+            script {
+                echo "Ensuring all Docker containers are cleaned up on the agent..."
+                sh "docker rm -f ${CONTAINER_NAME} || true"
+            }
+        }
         success {
-            echo "Pipeline completed successfully. Testers have 5 minutes to access the application."
+            echo "Pipeline completed successfully! The application will run for 5 minutes."
         }
         failure {
-            echo "Pipeline failed. Check logs for errors."
+            echo "Pipeline failed. Check logs for details."
         }
     }
 }
