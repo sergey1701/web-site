@@ -5,18 +5,33 @@ pipeline {
         pollSCM('* * * * *') // Poll SCM every minute
     }
 
+    parameters {
+        string(name: 'SLEEP_TIME', defaultValue: '300', description: 'Time (in seconds) to wait while the Apache server runs.')
+    }
+
     environment {
         APP_NAME = "apache-web-server"
-        DOCKER_IMAGE = "httpd:latest" // Official Apache HTTP Server Docker image !!! !!!
+        DOCKER_IMAGE = "httpd:latest" // Official Apache HTTP Server Docker image
         CONTAINER_NAME = "apache-container"
         PORT = "8081" // Host port mapped to container port 80
         LOCAL_URL = "http://test-server:${PORT}" // URL to access the container
     }
 
     stages {
-        stage('Initialize') {
+        stage('Check Repository Origin') {
             steps {
-                echo "Initializing pipeline for ${APP_NAME}..."
+                script {
+                    // Get the origin URL from Git configuration
+                    def origin = sh(script: "git config --get remote.origin.url", returnStdout: true).trim()
+                    echo "Detected origin: ${origin}"
+
+                    // Check if the origin contains 'test'
+                    if (!origin.contains("test")) {
+                        error "Origin does not contain 'test'. Aborting pipeline."
+                    } else {
+                        echo "Origin contains 'test'. Proceeding with the pipeline."
+                    }
+                }
             }
         }
 
@@ -37,12 +52,12 @@ pipeline {
 
         stage('Wait and Monitor') {
             steps {
-                echo "Waiting for 5 minutes while the Apache server runs..."
                 script {
-                    def totalTime = 300 // 5 minutes in seconds
+                    echo "Waiting for ${params.SLEEP_TIME} seconds while the Apache server runs..."
+                    def totalTime = params.SLEEP_TIME.toInteger()
                     for (int i = totalTime; i > 0; i -= 10) {
                         echo "Time remaining: ${i} seconds"
-                        sleep 10
+                        sleep Math.min(10, i) // Sleep for 10 seconds or remaining time
                     }
                 }
             }
