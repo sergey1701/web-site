@@ -24,7 +24,7 @@ pipeline {
                     --name ${CONTAINER_NAME} \
                     -p ${PORT}:80 \
                     ${DOCKER_IMAGE};
-
+                echo "Apache server is running and accessible at: ${LOCAL_URL}";
                 # Wait for 5 minutes
                 sleep 300;
 
