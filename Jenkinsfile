@@ -71,13 +71,7 @@ pipeline {
             }
         }
 
-        stage('Cleanup') {
-            steps {
-                echo "Stopping and removing the Apache container..."
-                sh "docker rm -f ${CONTAINER_NAME} || true"
-            }
-        }
-
+       
         stage('Output URL') {
             steps {
                 echo "Apache server was running and accessible at: ${LOCAL_URL}"
@@ -86,6 +80,10 @@ pipeline {
     }
 
     post {
+        always {
+            echo "Ensuring no lingering containers..."
+            sh "docker rm -f ${CONTAINER_NAME} || true"
+        }
         success {
             echo "Pipeline completed successfully!"
         }
