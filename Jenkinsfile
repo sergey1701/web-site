@@ -38,8 +38,8 @@ pipeline {
                         return sh(script: "netstat -tuln | grep ':${port} ' || true", returnStatus: true) == 0
                     }
 
-                    // Check the initial port and find an available one if necessary
-                    def port = env.PORT.toInteger()
+                    // Start with 8001 and increment until a free port is found
+                    def port = 8001
                     while (isPortInUse(port)) {
                         echo "Port ${port} is in use. Trying next port..."
                         port += 1
