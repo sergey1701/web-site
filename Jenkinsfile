@@ -1,8 +1,8 @@
 pipeline {
-    agent { label 'docker' } // Replace 'docker' hello with the label of your Jenkins agent
+    agent { label 'docker' } // Replace 'docker' with your Jenkins agent label
 
     triggers {
-        pollSCM('* * * * *') // Poll SCM every minute (adjust as needed)
+        pollSCM('* * * * *') // Poll SCM every minute
     }
 
     environment {
@@ -21,14 +21,11 @@ pipeline {
                     def origin = sh(script: "git config --get remote.origin.url", returnStdout: true).trim()
                     echo "Detected origin: ${origin}"
 
-                    // Define the expected origin URL
-                    def expectedOrigin = "https://github.com/sergey1701/web-site.git"
-
-                    // Abort the pipeline if the origin does not match
-                    if (origin != expectedOrigin) {
-                        error "Origin does not match the expected URL (${expectedOrigin}). Aborting pipeline."
+                    // Check if the origin contains 'test'
+                    if (!origin.contains("test")) {
+                        error "Origin does not contain 'test'. Aborting pipeline."
                     } else {
-                        echo "Origin matches the expected URL. Proceeding with the build."
+                        echo "Origin contains 'test'. Proceeding with the pipeline."
                     }
                 }
             }
@@ -39,26 +36,14 @@ pipeline {
                 script {
                     echo "Starting Apache web server inside a Docker container for 5 minutes..."
                     sh """
-                    # Start the container in detached mode
                     docker run -d \
                         --name ${CONTAINER_NAME} \
                         -p ${PORT}:80 \
                         ${DOCKER_IMAGE};
                     echo "Apache server is running and accessible at: ${LOCAL_URL}";
-                    # Wait for 5 minutes
                     sleep 300;
-
-                    # Stop and remove the container after 5 minutes
                     docker rm -f ${CONTAINER_NAME};
                     """
-                }
-            }
-        }
-
-        stage('Output URL') {
-            steps {
-                script {
-                    echo "Apache server is running and accessible at: ${LOCAL_URL}"
                 }
             }
         }
