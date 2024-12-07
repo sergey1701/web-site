@@ -1,66 +1,35 @@
 pipeline {
-    agent any
-    environment {
-        // Set environment variables if needed
-        GIT_REPO = 'https://github.com/sergey1701/web-site.git'
-        BRANCH = 'master' // Change to your branch name
-    }
+    agent { label 'local-docker' } // Use the local agent
+
     stages {
         stage('Checkout') {
             steps {
-                // Checkout code from GitHub
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: "${BRANCH}"]],
-                    userRemoteConfigs: [[url: "${GIT_REPO}"]]
-                ])
+                checkout scm
             }
         }
+
         stage('Install Dependencies') {
             steps {
-                script {
-                    // Ensure the required tools are installed
-                    sh 'npm install'
-                }
+                sh 'docker run --rm -v $WORKSPACE:/app -w /app node:14 npm install'
             }
         }
+
         stage('Run Tests') {
             steps {
-                script {
-                    // Run tests
-                    sh 'npm test'
-                }
+                sh 'docker run --rm -v $WORKSPACE:/app -w /app node:14 npm test'
             }
         }
-        stage('Lint Code') {
-            steps {
-                script {
-                    // Run linting (optional, based on your project setup)
-                    sh 'npm run lint'
-                }
-            }
-        }
+
         stage('Build Application') {
             steps {
-                script {
-                    // Build the application (optional, for production-ready code)
-                    sh 'npm run build'
-                }
+                sh 'docker run --rm -v $WORKSPACE:/app -w /app node:14 npm run build'
             }
         }
     }
+
     post {
         always {
-            // Archive test results, logs, or any relevant artifacts
-            archiveArtifacts artifacts: '**/test-results/*.xml', allowEmptyArchive: true
-            // Publish test results (if using JUnit or other reporting tools)
-            junit '**/test-results/*.xml'
-        }
-        success {
-            echo 'Build and tests succeeded!'
-        }
-        failure {
-            echo 'Build or tests failed!'
+            echo 'Pipeline completed!'
         }
     }
 }
