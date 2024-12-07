@@ -86,10 +86,6 @@ pipeline {
     }
 
     post {
-        always {
-            echo "Ensuring no lingering containers..."
-            sh "docker rm -f ${CONTAINER_NAME} || true"
-        }
         success {
             echo "Pipeline completed successfully!"
         }
