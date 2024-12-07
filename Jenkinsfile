@@ -6,13 +6,17 @@ pipeline {
     }
 
     parameters {
-        string(name: 'SLEEP_TIME', defaultValue: '300', description: 'Time (in seconds) to wait while the Apache server runs.')
+        choice(
+            name: 'SLEEP_TIME',
+            choices: ['1', '2', '5', '10'], // Time options in minutes
+            description: 'Select the time (in minutes) to wait while the Apache server runs.'
+        )
     }
 
     environment {
         APP_NAME = "apache-web-server"
         DOCKER_IMAGE = "httpd:latest" // Official Apache HTTP Server Docker image
-        CONTAINER_NAME = "apache-container"
+        CONTAINER_NAME = "apache-test-container"
         PORT = "8082" // Host port mapped to container port 80
         LOCAL_URL = "http://test-server:${PORT}" // URL to access the container
     }
@@ -41,11 +45,12 @@ pipeline {
 
         stage('Wait and Monitor') {
             steps {
-                echo "Waiting for ${params.SLEEP_TIME} seconds while the Apache server runs..."
+                echo "Waiting for ${params.SLEEP_TIME} minute(s) while the Apache server runs..."
                 script {
-                    def totalTime = params.SLEEP_TIME.toInteger()
+                    def totalMinutes = params.SLEEP_TIME.toInteger()
+                    def totalTime = totalMinutes * 60 // Convert minutes to seconds
                     for (int i = totalTime; i > 0; i -= 10) {
-                        echo "Time remaining: ${i} seconds"
+                        echo "Time remaining: ${i / 60} minute(s) and ${i % 60} second(s)"
                         sleep Math.min(10, i) // Sleep for 10 seconds or remaining time
                     }
                 }
