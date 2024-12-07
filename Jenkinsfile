@@ -1,8 +1,8 @@
 pipeline {
-    agent { label 'docker' } // Replace 'docker' with the label of your Jenkins agent
+    agent { label 'docker' } // Ensure this matches your Jenkins agent label
 
     triggers {
-        pollSCM('* * * * *') // Poll SCM every minute (adjust as needed) hello write !!! !!!
+        pollSCM('* * * * *') // Poll SCM every minute
     }
 
     environment {
@@ -14,43 +14,64 @@ pipeline {
     }
 
     stages {
-        stage('Run Apache Container') {
-        steps {
-            script {
-                echo "Starting Apache web server inside a Docker container for 5 minutes..."
-                sh """
-                # Start the container in detached mode
-                docker run -d \
-                    --name ${CONTAINER_NAME} \
-                    -p ${PORT}:80 \
-                    ${DOCKER_IMAGE};
-                echo "Apache server is running and accessible at: ${LOCAL_URL}";
-                # Wait for 5 minutes
-                sleep 300;
-
-                # Stop and remove the container after 5 minutes
-                docker rm -f ${CONTAINER_NAME};
-                """
+        stage('Initialize') {
+            steps {
+                echo "Initializing pipeline for ${APP_NAME}..."
             }
         }
-    }
+
+        stage('Run Apache Container') {
+            steps {
+                script {
+                    echo "Starting Apache web server inside a Docker container..."
+                    sh """
+                    docker run -d \
+                        --name ${CONTAINER_NAME} \
+                        -p ${PORT}:80 \
+                        ${DOCKER_IMAGE};
+                    echo "Apache server is running and accessible at: ${LOCAL_URL}";
+                    """
+                }
+            }
+        }
+
+        stage('Wait and Monitor') {
+            steps {
+                echo "Waiting for 5 minutes while the Apache server runs..."
+                script {
+                    def totalTime = 300 // 5 minutes in seconds
+                    for (int i = totalTime; i > 0; i -= 10) {
+                        echo "Time remaining: ${i} seconds"
+                        sleep 10
+                    }
+                }
+            }
+        }
+
+        stage('Cleanup') {
+            steps {
+                echo "Stopping and removing the Apache container..."
+                sh "docker rm -f ${CONTAINER_NAME} || true"
+            }
+        }
 
         stage('Output URL') {
             steps {
-                script {
-                    echo "Apache server is running and accessible at: ${LOCAL_URL}"
-                }
+                echo "Apache server was running and accessible at: ${LOCAL_URL}"
             }
         }
     }
 
     post {
-        
+        always {
+            echo "Ensuring no lingering containers..."
+            sh "docker rm -f ${CONTAINER_NAME} || true"
+        }
         success {
-            echo "Pipeline completed successfully! The Apache server was available during the pipeline."
+            echo "Pipeline completed successfully!"
         }
         failure {
-            echo "Pipeline failed. The Apache container might not have started correctly."
+            echo "Pipeline failed. Check logs for errors."
         }
     }
 }
