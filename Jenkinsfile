@@ -71,10 +71,15 @@ pipeline {
             }
         }
 
-       
         stage('Output URL') {
             steps {
-                echo "Apache server was running and accessible at: ${LOCAL_URL}"
+                script {
+                    if (env.LOCAL_URL?.trim()) {
+                        echo "Apache server was running and accessible at: ${env.LOCAL_URL}"
+                    } else {
+                        echo "Apache server URL could not be determined. Check logs for details."
+                    }
+                }
             }
         }
     }
@@ -82,7 +87,11 @@ pipeline {
     post {
         always {
             echo "Ensuring no lingering containers..."
-            sh "docker rm -f ${CONTAINER_NAME} || true"
+            script {
+                sh """
+                docker ps -a --filter "name=${CONTAINER_NAME}" --format "{{.Names}}" | grep -w ${CONTAINER_NAME} && docker rm -f ${CONTAINER_NAME} || echo "Container ${CONTAINER_NAME} not found. Skipping cleanup."
+                """
+            }
         }
         success {
             echo "Pipeline completed successfully!"
