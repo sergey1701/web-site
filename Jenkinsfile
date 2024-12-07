@@ -72,12 +72,12 @@ pipeline {
     }
 
     post {
-        always {
-            script {
-                echo "Ensuring all Docker containers are cleaned up on the agent..."
-                sh "docker rm -f ${CONTAINER_NAME} || true"
-            }
-        }
+        // always {
+        //     script {
+        //         echo "Ensuring all Docker containers are cleaned up on the agent..."
+        //         sh "docker rm -f ${CONTAINER_NAME} || true"
+        //     }
+        // }
         success {
             echo "Pipeline completed successfully! The application will run for 5 minutes."
         }
