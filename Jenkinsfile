@@ -15,7 +15,7 @@ pipeline {
                 script {
                     echo "Starting Apache web server inside a Docker container..."
                     sh """
-                    docker run -d --rm \
+                    docker run -d \
                         --name ${CONTAINER_NAME} \
                         -p ${PORT}:80 \
                         ${DOCKER_IMAGE}
