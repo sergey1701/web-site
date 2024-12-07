@@ -38,12 +38,7 @@ pipeline {
     }
 
     post {
-        always {
-            script {
-                echo "Ensuring the Apache container is stopped after the pipeline..."
-                sh "docker rm -f ${CONTAINER_NAME} || true"
-            }
-        }
+        
         success {
             echo "Pipeline completed successfully! The Apache server was available during the pipeline."
         }
