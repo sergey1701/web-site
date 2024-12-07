@@ -7,7 +7,7 @@ pipeline {
 
     environment {
         APP_NAME = "apache-web-server"
-        DOCKER_IMAGE = "httpd:latest" // Official Apache HTTP Server Docker image
+        DOCKER_IMAGE = "httpd:latest" // Official Apache HTTP Server Docker image !!!
         CONTAINER_NAME = "apache-container"
         PORT = "8081" // Host port mapped to container port 80
         LOCAL_URL = "http://test-server:${PORT}" // URL to access the container
