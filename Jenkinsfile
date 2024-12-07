@@ -2,27 +2,32 @@ pipeline {
     agent any
 
     environment {
-        // Set environment variables if needed
-        GIT_REPO = 'https://github.com/your-username/your-repo.git'
-        BRANCH = 'main' // Change to your branch name
+        GIT_REPO = 'https://github.com/your-username/your-repo.git' // Update with your repo URL
+        GIT_CREDENTIALS_ID = 'your-credentials-id' // Update with Jenkins credentials ID
+        BRANCH = 'main' // Update with your target branch
     }
 
     stages {
         stage('Checkout') {
             steps {
-                // Checkout code from GitHub
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: "${BRANCH}"]],
-                    userRemoteConfigs: [[url: "${GIT_REPO}"]]
-                ])
+                script {
+                    // Checkout the repository
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: "*/${BRANCH}"]],
+                        userRemoteConfigs: [[
+                            url: "${GIT_REPO}",
+                            credentialsId: "${GIT_CREDENTIALS_ID}"
+                        ]]
+                    ])
+                }
             }
         }
 
         stage('Install Dependencies') {
             steps {
                 script {
-                    // Ensure the required tools are installed
+                    // Ensure Node.js dependencies are installed
                     sh 'npm install'
                 }
             }
@@ -31,7 +36,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    // Run tests
+                    // Run the test suite
                     sh 'npm test'
                 }
             }
@@ -40,7 +45,7 @@ pipeline {
         stage('Lint Code') {
             steps {
                 script {
-                    // Run linting (optional, based on your project setup)
+                    // Lint the codebase
                     sh 'npm run lint'
                 }
             }
@@ -49,7 +54,7 @@ pipeline {
         stage('Build Application') {
             steps {
                 script {
-                    // Build the application (optional, for production-ready code)
+                    // Build the application (if applicable)
                     sh 'npm run build'
                 }
             }
@@ -58,19 +63,19 @@ pipeline {
 
     post {
         always {
-            // Archive test results, logs, or any relevant artifacts
-            archiveArtifacts artifacts: '**/test-results/*.xml', allowEmptyArchive: true
-            // Publish test results (if using JUnit or other reporting tools)
-            junit '**/test-results/*.xml'
+            script {
+                // Archive test results and artifacts
+                archiveArtifacts artifacts: '**/test-results/*.xml', allowEmptyArchive: true
+                junit '**/test-results/*.xml'
+            }
         }
 
         success {
-            echo 'Build and tests succeeded!'
+            echo 'Build and tests completed successfully!'
         }
 
         failure {
-            echo 'Build or tests failed!'
+            echo 'Build or tests failed. Check logs for details.'
         }
     }
 }
-
