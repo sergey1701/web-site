@@ -2,6 +2,7 @@ pipeline {
     agent { label 'docker' } // Ensure this matches your Jenkins agent label
 
     triggers {
+<<<<<<< HEAD
         pollSCM('* * * * *') // Poll SCM every minute
     }
 
@@ -11,6 +12,9 @@ pipeline {
             choices: ['1', '2', '5', '10', '20', '30'], // Time options in minutes
             description: 'Select the time (in minutes) to wait while the Apache server runs.'
         )
+=======
+        pollSCM('* * * * *') // Poll SCM every minute (adjust as needed) hello
+>>>>>>> master
     }
 
     environment {
