@@ -17,14 +17,39 @@ pipeline {
         APP_NAME = "apache-web-server"
         DOCKER_IMAGE = "httpd:latest" // Official Apache HTTP Server Docker image
         CONTAINER_NAME = "apache-test-container"
-        PORT = "8082" // Host port mapped to container port 80
-        LOCAL_URL = "http://test-server:${PORT}" // URL to access the container
+        PORT = "8082" // Initial host port mapped to container port 80
+        LOCAL_URL = "" // URL to be updated dynamically
     }
 
     stages {
         stage('Initialize') {
             steps {
-                echo "Initializing pipeline for ${APP_NAME}..."
+                script {
+                    echo "Initializing pipeline for ${APP_NAME}..."
+                }
+            }
+        }
+
+        stage('Check Port Availability') {
+            steps {
+                script {
+                    // Function to check if a port is in use
+                    def isPortInUse = { port ->
+                        return sh(script: "netstat -tuln | grep ':${port} ' || true", returnStatus: true) == 0
+                    }
+
+                    // Check the initial port and find an available one if necessary
+                    def port = env.PORT.toInteger()
+                    while (isPortInUse(port)) {
+                        echo "Port ${port} is in use. Trying next port..."
+                        port += 1
+                    }
+
+                    // Update the environment variables with the available port
+                    env.PORT = port.toString()
+                    env.LOCAL_URL = "http://test-server:${env.PORT}"
+                    echo "Selected port ${env.PORT} for the Apache server."
+                }
             }
         }
 
