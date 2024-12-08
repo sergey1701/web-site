@@ -15,7 +15,7 @@ pipeline {
 
     environment {
         APP_NAME = "apache-web-server"
-        DOCKER_IMAGE = "httpd:latest" // Official Apache HTTP Server Docker image
+        DOCKER_IMAGE = "custom-apache-image" // Use your custom-built image
         CONTAINER_NAME = "apache-test-container"
         PORT = "8001" // Initial host port to start trying
         LOCAL_URL = "" // URL to be updated dynamically
@@ -26,6 +26,17 @@ pipeline {
             steps {
                 script {
                     echo "Initializing pipeline for ${APP_NAME}..."
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    echo "Building Docker image..."
+                    sh """
+                    docker build -t ${DOCKER_IMAGE} .
+                    """
                 }
             }
         }
@@ -41,7 +52,7 @@ pipeline {
                             docker run -d \
                                 --name ${CONTAINER_NAME} \
                                 -p ${port}:80 \
-                                ${DOCKER_IMAGE};
+                                ${DOCKER_IMAGE}
                             """
                             // If the container starts successfully, break out of the loop
                             env.PORT = port.toString()
