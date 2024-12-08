@@ -15,10 +15,7 @@ pipeline {
 
     environment {
         APP_NAME = "apache-web-server"
-        DOCKER_IMAGE = "custom-apache-image" // Use your custom-built image
-        CONTAINER_NAME = "apache-test-container"
-        PORT = "8001" // Initial host port to start trying
-        LOCAL_URL = "" // URL to be updated dynamically
+        COMPOSE_FILE = "docker-compose.yml" // Path to docker-compose file
     }
 
     stages {
@@ -30,40 +27,13 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build and Start Apache') {
             steps {
                 script {
-                    echo "Building Docker image..."
+                    echo "Building and starting services with docker-compose..."
                     sh """
-                    docker build -t ${DOCKER_IMAGE} .
+                    docker-compose -f ${COMPOSE_FILE} up --build -d
                     """
-                }
-            }
-        }
-
-        stage('Find Available Port and Run Apache Container') {
-            steps {
-                script {
-                    def port = env.PORT.toInteger()
-                    while (true) {
-                        try {
-                            echo "Trying to start Apache container on port ${port}..."
-                            sh """
-                            docker run -d \
-                                --name ${CONTAINER_NAME} \
-                                -p ${port}:80 \
-                                ${DOCKER_IMAGE}
-                            """
-                            // If the container starts successfully, break out of the loop
-                            env.PORT = port.toString()
-                            env.LOCAL_URL = "http://test-server:${env.PORT}"
-                            echo "Apache server is running on port ${env.PORT} and accessible at: ${env.LOCAL_URL}"
-                            break
-                        } catch (Exception e) {
-                            echo "Port ${port} failed. Incrementing port and trying again..."
-                            port += 1
-                        }
-                    }
                 }
             }
         }
@@ -82,14 +52,13 @@ pipeline {
             }
         }
 
-        stage('Output URL') {
+        stage('Output Logs') {
             steps {
                 script {
-                    if (env.LOCAL_URL?.trim()) {
-                        echo "Apache server was running and accessible at: ${env.LOCAL_URL}"
-                    } else {
-                        echo "Apache server URL could not be determined. Check logs for details."
-                    }
+                    echo "Fetching logs for troubleshooting or verification..."
+                    sh """
+                    docker-compose -f ${COMPOSE_FILE} logs
+                    """
                 }
             }
         }
@@ -97,10 +66,10 @@ pipeline {
 
     post {
         always {
-            echo "Ensuring no lingering containers..."
+            echo "Stopping and cleaning up services..."
             script {
                 sh """
-                docker ps -a --filter "name=${CONTAINER_NAME}" --format "{{.Names}}" | grep -w ${CONTAINER_NAME} && docker rm -f ${CONTAINER_NAME} || echo "Container ${CONTAINER_NAME} not found. Skipping cleanup."
+                docker-compose -f ${COMPOSE_FILE} down || echo "Failed to stop and clean services."
                 """
             }
         }
