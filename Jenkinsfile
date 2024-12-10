@@ -9,7 +9,7 @@ pipeline {
         choice(
             name: 'SLEEP_TIME',
             choices: ['1', '2', '5', '10', '20', '30'], // Time options in minutes
-            description: 'Select the time (in minutes) to wait while the Apache server runs. test TEST TEST'
+            description: 'Select the time (in minutes) to wait while the Apache server runs. test TEST TEST TEST'
         )
     }
 
