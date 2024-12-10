@@ -1,7 +1,4 @@
+Jenkinsfile
 *backup*
 *.sh
-<<<<<<< HEAD
 *.jar
-=======
-*.jar
->>>>>>> test
