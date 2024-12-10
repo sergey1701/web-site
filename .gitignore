@@ -1,3 +1,7 @@
 *backup*
 *.sh
+<<<<<<< HEAD
 *.jar
+=======
+*.jar
+>>>>>>> test
