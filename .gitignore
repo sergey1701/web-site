@@ -1,1 +1,37 @@
-Jenkinsfile
+# Ignore all log files
+*.log
+
+# Ignore temporary files created by editors
+*.swp
+*.tmp
+*.bak
+# Ignore internal scripts
+*backup*
+*.sh
+*.jar
+# Ignore node_modules folder (for Node.js projects)
+node_modules/
+
+# Ignore compiled Python files
+*.pyc
+__pycache__/
+
+# Ignore all files in the build/ directory
+build/
+
+# Ignore secrets or environment configuration
+.env
+secrets.json
+
+# Ignore all files with a `.example` extension
+*.example
+
+# Ignore macOS system files
+.DS_Store
+
+# Ignore Windows system files
+Thumbs.db
+
+# Ignore local IDE or editor config files
+.vscode/
+.idea/
