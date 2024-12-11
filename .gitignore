@@ -1,6 +1,3 @@
-# Ignore Jenkinsfile
-Jenkinsfile
-
 # Ignore all log files
 *.log
 
