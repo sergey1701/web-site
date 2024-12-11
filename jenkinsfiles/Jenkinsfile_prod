@@ -7,7 +7,7 @@ pipeline {
 
     environment {
         APP_NAME = "apache-web-server"
-        COMPOSE_FILE = "docker-compose.yml" // Path to docker-compose file
+        COMPOSE_FILE = "docker-compose_prod.yml" // Path to docker-compose file
     }
 
     stages {
