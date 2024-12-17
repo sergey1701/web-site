@@ -39,10 +39,10 @@ pipeline {
             }
         }
 
-        stage('Run Python Script for Image Repair') {
+        stage('Run Vulnerability Scan') {
             steps {
                 script {
-                    echo "Running Python script to repair Docker images..."
+                    echo "Running vulnerability scan on Docker images..."
                     sh """
                     python3 ${PYTHON_SCRIPT}
                     """
@@ -79,7 +79,6 @@ pipeline {
             steps {
                 script {
                     echo "Fetching container testing data and output..."
-                    // Replace 'apache-container' with your container's name or service name in Docker Compose
                     sh """
                     docker exec apache-container curl -s http://localhost
                     """
