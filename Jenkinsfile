@@ -9,13 +9,14 @@ pipeline {
         choice(
             name: 'SLEEP_TIME',
             choices: ['1', '2', '5', '10', '20', '30'], // Time options in minutes
-            description: 'Select the time (in minutes) to wait while the Apache server runs. test'
+            description: 'Select the time (in minutes) to wait while the Apache server runs.'
         )
     }
 
     environment {
         APP_NAME = "apache-web-server"
         COMPOSE_FILE = "docker-compose.yml" // Path to docker-compose file
+        PYTHON_SCRIPT = "docker-image-repaire/image-repaire.py" // Path to the Python script
     }
 
     stages {
@@ -33,6 +34,17 @@ pipeline {
                     echo "Building and starting services with docker-compose..."
                     sh """
                     docker-compose -f ${COMPOSE_FILE} up --build -d
+                    """
+                }
+            }
+        }
+
+        stage('Run Python Script for Image Repair') {
+            steps {
+                script {
+                    echo "Running Python script to repair Docker images..."
+                    sh """
+                    python3 ${PYTHON_SCRIPT}
                     """
                 }
             }
