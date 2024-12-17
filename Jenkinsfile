@@ -74,6 +74,18 @@ pipeline {
                 }
             }
         }
+
+        stage('Container Testing Output') {
+            steps {
+                script {
+                    echo "Fetching container testing data and output..."
+                    // Replace 'apache-container' with your container's name or service name in Docker Compose
+                    sh """
+                    docker exec apache-container curl -s http://localhost
+                    """
+                }
+            }
+        }
     }
 
     post {
